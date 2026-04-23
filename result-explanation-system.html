@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Search — Explanation System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #F5F6FA;
+      --surface: #FFFFFF;
+      --surface-2: #F0F1F6;
+      --border: #E2E4EE;
+      --border-light: #CDD0DE;
+
+      --text-primary: #111827;
+      --text-secondary: #4B5368;
+      --text-muted: #9198B0;
+
+      --accent-blue: #3B6EF0;
+      --accent-blue-dim: rgba(59, 110, 240, 0.08);
+
+      --keyword-bg: #EDFAF3;
+      --keyword-border: #A7E8C4;
+      --keyword-text: #166534;
+      --keyword-dot: #16A34A;
+
+      --semantic-bg: #F3EEFF;
+      --semantic-border: #C4B0F5;
+      --semantic-text: #5B21B6;
+
+      --visual-bg: #FFF4EC;
+      --visual-border: #FDC09A;
+      --visual-text: #92400E;
+
+      --passage-bg: #EBF6FF;
+      --passage-border: #93D0F7;
+      --passage-text: #0C4A6E;
+
+      --pill-radius: 20px;
+      --card-radius: 10px;
+      --radius-sm: 4px;
+      --radius-md: 6px;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'Figtree', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── Layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: var(--space-16) var(--space-6);
+    }
+
+    /* ── Header ── */
+    .page-header {
+      margin-bottom: var(--space-12);
+      padding-bottom: var(--space-8);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .page-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: var(--space-3);
+    }
+
+    .page-title {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+      line-height: 1.2;
+    }
+
+    .page-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 620px;
+      line-height: 1.6;
+    }
+
+    /* ── Philosophy Banner ── */
+    .philosophy {
+      background: var(--accent-blue-dim);
+      border: 1px solid rgba(79, 126, 255, 0.25);
+      border-radius: var(--card-radius);
+      padding: var(--space-5) var(--space-6);
+      margin-bottom: var(--space-10);
+    }
+
+    .philosophy-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-blue);
+      margin-bottom: var(--space-2);
+    }
+
+    .philosophy p {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.7;
+    }
+
+    .philosophy strong {
+      color: #fff;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: var(--space-12);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-6);
+    }
+
+    .section-step {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-blue);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* ── Paradigm Group ── */
+    .paradigm-group {
+      margin-bottom: var(--space-10);
+    }
+
+    .paradigm-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .paradigm-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .paradigm-dot.text { background: var(--semantic-text); }
+    .paradigm-dot.visual { background: var(--visual-text); }
+    .paradigm-dot.passage { background: var(--passage-text); }
+
+    .paradigm-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .paradigm-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* ── Match Type Card ── */
+    .match-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      margin-bottom: var(--space-4);
+      overflow: hidden;
+    }
+
+    .match-card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-4) var(--space-5);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .match-card-header:hover {
+      background: var(--surface-2);
+    }
+
+    .match-type-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 3px 10px;
+      border-radius: var(--pill-radius);
+      white-space: nowrap;
+    }
+
+    .badge-keyword {
+      background: var(--keyword-bg);
+      border: 1px solid var(--keyword-border);
+      color: var(--keyword-text);
+    }
+
+    .badge-semantic {
+      background: var(--semantic-bg);
+      border: 1px solid var(--semantic-border);
+      color: var(--semantic-text);
+    }
+
+    .badge-visual {
+      background: var(--visual-bg);
+      border: 1px solid var(--visual-border);
+      color: var(--visual-text);
+    }
+
+    .badge-passage {
+      background: var(--passage-bg);
+      border: 1px solid var(--passage-border);
+      color: var(--passage-text);
+    }
+
+    .match-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+    }
+
+    .match-card-subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .expand-icon {
+      color: var(--text-muted);
+      font-size: 16px;
+      transition: transform 0.2s;
+      margin-left: var(--space-2);
+    }
+
+    .match-card.open .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    .match-card-body {
+      display: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .match-card.open .match-card-body {
+      display: block;
+    }
+
+    /* ── Body sections ── */
+    .body-section {
+      padding: var(--space-5) var(--space-5);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .body-section:last-child {
+      border-bottom: none;
+    }
+
+    .body-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: var(--space-3);
+    }
+
+    .body-section p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── Anatomy Table ── */
+    .anatomy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .anatomy-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .anatomy-table td {
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-secondary);
+      vertical-align: top;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    .anatomy-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .anatomy-table td:first-child {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-primary);
+      white-space: nowrap;
+      width: 160px;
+    }
+
+    .avail-always {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--keyword-text);
+    }
+
+    .avail-sometimes {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #FACC15;
+    }
+
+    /* ── Rendering Examples ── */
+    .render-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .render-row {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+    }
+
+    .render-condition {
+      font-size: 12px;
+      color: var(--text-muted);
+      min-width: 200px;
+      padding-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .render-arrow {
+      color: var(--text-muted);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    /* ── Chips (preview) ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: 4px 12px;
+      border-radius: var(--pill-radius);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .chip-keyword {
+      background: var(--keyword-bg);
+      border: 1px solid var(--keyword-border);
+      color: var(--keyword-text);
+    }
+
+    .chip-semantic {
+      background: var(--semantic-bg);
+      border: 1px solid var(--semantic-border);
+      color: var(--semantic-text);
+    }
+
+    .chip-visual {
+      background: var(--visual-bg);
+      border: 1px solid var(--visual-border);
+      color: var(--visual-text);
+    }
+
+    .chip-passage {
+      background: var(--passage-bg);
+      border: 1px solid var(--passage-border);
+      color: var(--passage-text);
+    }
+
+    .chip-fallback {
+      background: var(--surface-2);
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--keyword-dot);
+      flex-shrink: 0;
+    }
+
+    .chip-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #6B3A2A, #C05A3A);
+      flex-shrink: 0;
+    }
+
+    /* ── Open Questions ── */
+    .open-questions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .open-q {
+      display: flex;
+      gap: var(--space-3);
+      align-items: flex-start;
+    }
+
+    .open-q-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+
+    .open-q p {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Summary Table ── */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: var(--space-4);
+    }
+
+    .summary-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: var(--space-2) var(--space-4);
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .summary-table td {
+      padding: var(--space-3) var(--space-4);
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .summary-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .yes { color: var(--keyword-text); font-weight: 600; }
+    .partial { color: #FACC15; font-weight: 600; }
+    .no { color: var(--text-muted); }
+
+    /* ── Footer ── */
+    .page-footer {
+      margin-top: var(--space-12);
+      padding-top: var(--space-6);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ── Next Step Banner ── */
+    .next-step {
+      background: var(--surface);
+      border: 1px dashed var(--border-light);
+      border-radius: var(--card-radius);
+      padding: var(--space-5) var(--space-6);
+      margin-top: var(--space-8);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .next-step-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .next-step-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .next-step-text strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div class="page-label">AI Search in PLM · Explanation System</div>
+    <h1 class="page-title">Designing for Match Reasons</h1>
+    <p class="page-subtitle">A system-level approach to explaining search results across all match types — from keyword hits to semantic understanding to visual similarity.</p>
+  </div>
+
+  <!-- Philosophy -->
+  <div class="philosophy">
+    <div class="philosophy-label">Design Philosophy</div>
+    <p>
+      <strong>Show real values. Show the connection. Let users verify.</strong><br/>
+      In enterprise search, trust comes from auditability — not AI confidence scores or generated summaries.
+      Every match reason the system surfaces must be traceable to actual data in the record.
+      The AI's role is to surface and connect, not to conclude on the user's behalf.
+    </p>
+  </div>
+
+  <!-- Step 1 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-step">1</div>
+      <h2 class="section-title">Inventory Every Match Type</h2>
+    </div>
+
+    <!-- ── Paradigm 1: Text Bridge ── -->
+    <div class="paradigm-group">
+      <div class="paradigm-header">
+        <div class="paradigm-dot text"></div>
+        <span class="paradigm-name">Paradigm A — Text Bridge</span>
+        <span class="paradigm-desc">Show query term → connection type → matched value → location</span>
+      </div>
+
+      <!-- Keyword -->
+      <div class="match-card open" onclick="toggleCard(this)">
+        <div class="match-card-header">
+          <span class="match-type-badge badge-keyword">Keyword</span>
+          <span class="match-card-title">Keyword Match</span>
+          <span class="match-card-subtitle">Text bridge always showable</span>
+          <span class="expand-icon">▾</span>
+        </div>
+        <div class="match-card-body">
+          <div class="body-section">
+            <div class="body-section-label">Definition</div>
+            <p>User provided a word or phrase. System found the exact word(s) in the record's node name or a configured keyword-searchable attribute. The match may be direct on the record, or found via a related object (e.g. a Style matched because its linked Colorway contains the word).</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Anatomy</div>
+            <table class="anatomy-table">
+              <thead>
+                <tr><th>Field</th><th>Description</th><th>Available?</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>query_term</td><td>The word or phrase from the user's input</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>connection_type</td><td>Exact match ( = )</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>matched_value</td><td>The actual value found in the data</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>attribute_location</td><td>Which attribute the match was found in</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>via_related_object</td><td>Whether the match was found on a related object rather than the record itself</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Rendering Logic</div>
+            <div class="render-list">
+              <div class="render-row">
+                <span class="render-condition">Direct match on record</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-keyword"><span class="chip-dot"></span>Cotton in Marketing Main Material</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Color match, with swatch</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-keyword"><span class="chip-dot" style="background:#C0392B"></span>Dark Red in Colorway</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Match via related object</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-keyword"><span class="chip-dot" style="background:#C0392B"></span>Dark Red in Colorway</span>
+              </div>
+            </div>
+            <p style="margin-top: 12px; font-size:12px; color: var(--text-muted);">Always shows the actual found value — not the query term. The user already knows what they searched. The chip tells them what the system found. Whether the match is direct or via a related object, the chip looks the same.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semantic -->
+      <div class="match-card" onclick="toggleCard(this)">
+        <div class="match-card-header">
+          <span class="match-type-badge badge-semantic">Semantic</span>
+          <span class="match-card-title">Semantic Match</span>
+          <span class="match-card-subtitle">Text bridge sometimes showable</span>
+          <span class="expand-icon">▾</span>
+        </div>
+        <div class="match-card-body">
+          <div class="body-section">
+            <div class="body-section-label">Definition</div>
+            <p>User provided a word or phrase. System found meaning-equivalent content in a semantically-indexed attribute. The bridge between query and result is sometimes explicit (synonym-level) and sometimes implicit (holistic match where no single word pairs up). Only operates on attributes configured by the admin as semantically searchable. The match may be direct on the record, or found via a related object.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Anatomy</div>
+            <table class="anatomy-table">
+              <thead>
+                <tr><th>Field</th><th>Description</th><th>Available?</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>query_term</td><td>The word or phrase from the user's input</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>connection_type</td><td>Approximate match ( ≈ ) or holistic</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>matched_value</td><td>The specific phrase or value found in the attribute</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+                <tr><td>attribute_location</td><td>Which semantic-indexed attribute the match was found in</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>via_related_object</td><td>Whether the match was found on a related object rather than the record itself</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Rendering Logic</div>
+            <div class="render-list">
+              <div class="render-row">
+                <span class="render-condition">Synonym-level, direct</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-semantic">"Ivory" ≈ Cream in Description</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Phrase-level, direct</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-semantic">"Warm tone" ≈ soft cream and sand in Description</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Holistic match, no word bridge</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-semantic">Semantically matched in Description</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Synonym via related object</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-semantic">"Warm tone" ≈ soft cream in Colorway</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Holistic via related object</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-semantic">Semantically matched in Colorway</span>
+              </div>
+            </div>
+            <p style="margin-top: 12px; font-size:12px; color: var(--text-muted);">Whether the match is direct or via a related object, the chip shows the related object name as the location. The relationship detail doesn't need to be surfaced in the chip.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Open Questions</div>
+            <div class="open-questions">
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>For holistic matches, can the search engine return a similarity score that we can use to visually de-emphasize weak semantic matches — without showing a raw percentage to the user?</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Paradigm 2: Visual Evidence ── -->
+    <div class="paradigm-group">
+      <div class="paradigm-header">
+        <div class="paradigm-dot visual"></div>
+        <span class="paradigm-name">Paradigm B — Visual Evidence</span>
+        <span class="paradigm-desc">Show matched image thumbnails as evidence; user verifies visually</span>
+      </div>
+
+      <!-- Image Match 1 -->
+      <div class="match-card" onclick="toggleCard(this)">
+        <div class="match-card-header">
+          <span class="match-type-badge badge-visual">Image 1</span>
+          <span class="match-card-title">Image Match — Text to Image</span>
+          <span class="match-card-subtitle">Text query → visually similar images in records</span>
+          <span class="expand-icon">▾</span>
+        </div>
+        <div class="match-card-body">
+          <div class="body-section">
+            <div class="body-section-label">Definition</div>
+            <p>User provided a word or phrase. System found records whose attached images are visually similar to the meaning of the query. No text bridge exists — the evidence is the matched image(s) themselves. The query is treated as a whole (e.g. "red summer dress" finds images that look like a red summer dress, not images that are red + summery + dress-shaped separately).</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Anatomy</div>
+            <table class="anatomy-table">
+              <thead>
+                <tr><th>Field</th><th>Description</th><th>Available?</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>source_type</td><td>Text query (determines label wording)</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>matched_images</td><td>Thumbnail(s) of the images found on the record</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>image_count</td><td>How many images matched, if more than one</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+                <tr><td>attribute_location</td><td>Which image field the match came from (hero, swatch, reference)</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Rendering Logic</div>
+            <div class="render-list">
+              <div class="render-row">
+                <span class="render-condition">Single image match</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-visual"><span class="chip-thumb"></span>Visual match · Hero Image</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Multiple image matches</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-visual"><span class="chip-thumb"></span>Visual match · +2 more</span>
+              </div>
+            </div>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Open Questions</div>
+            <div class="open-questions">
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>When a result has both a text match and an image match, which chip takes priority? Both shown, or strongest only?</p>
+              </div>
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>Should partial query decomposition be a future option (e.g. match "dress" as category filter first, then find red within that)? Not recommended as default — adds complexity and reduces explainability.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Match 2 -->
+      <div class="match-card" onclick="toggleCard(this)">
+        <div class="match-card-header">
+          <span class="match-type-badge badge-visual">Image 2</span>
+          <span class="match-card-title">Image Match — Image to Image</span>
+          <span class="match-card-subtitle">Uploaded image → visually similar images in records</span>
+          <span class="expand-icon">▾</span>
+        </div>
+        <div class="match-card-body">
+          <div class="body-section">
+            <div class="body-section-label">Definition</div>
+            <p>User provided an image. System found records whose attached images are visually similar to the uploaded image. No text bridge exists. The bridge is visual similarity, expressed by showing the matched image(s) as evidence for the user to verify.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Anatomy</div>
+            <table class="anatomy-table">
+              <thead>
+                <tr><th>Field</th><th>Description</th><th>Available?</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>source_type</td><td>Image query (determines label wording)</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>matched_images</td><td>Thumbnail(s) of the visually similar images found</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>image_count</td><td>How many images matched</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+                <tr><td>attribute_location</td><td>Which image field the match came from</td><td><span class="avail-sometimes">◐ Sometimes</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Rendering Logic</div>
+            <div class="render-list">
+              <div class="render-row">
+                <span class="render-condition">Single image match</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-visual"><span class="chip-thumb"></span>Visually similar · Hero Image</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Multiple image matches</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-visual"><span class="chip-thumb"></span>Visually similar · +2 more</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Paradigm 3: Passage Evidence ── -->
+    <div class="paradigm-group">
+      <div class="paradigm-header">
+        <div class="paradigm-dot passage"></div>
+        <span class="paradigm-name">Paradigm C — Passage Evidence</span>
+        <span class="paradigm-desc">Show matched text excerpt with source reference; user reads to verify</span>
+      </div>
+
+      <!-- Document Match -->
+      <div class="match-card" onclick="toggleCard(this)">
+        <div class="match-card-header">
+          <span class="match-type-badge badge-passage">Document</span>
+          <span class="match-card-title">Document Match</span>
+          <span class="match-card-subtitle">Query → matching content inside attached document</span>
+          <span class="expand-icon">▾</span>
+        </div>
+        <div class="match-card-body">
+          <div class="body-section">
+            <div class="body-section-label">Definition</div>
+            <p>User provided a query. System found matching content inside a document attached to a record. Match is direct to the record the document belongs to. Keyword matching recommended as the starting point; semantic document search is a future expansion.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Anatomy</div>
+            <table class="anatomy-table">
+              <thead>
+                <tr><th>Field</th><th>Description</th><th>Available?</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>source_type</td><td>Document (determines label)</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>matched_passage</td><td>Text excerpt that triggered the match</td><td><span class="avail-always">● Always (keyword)</span></td></tr>
+                <tr><td>source_reference</td><td>Document name or title</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>connection_type</td><td>Keyword now; semantic as future expansion</td><td><span class="avail-always">● Always</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Rendering Logic</div>
+            <div class="render-list">
+              <div class="render-row">
+                <span class="render-condition">One document matched</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-passage">in Fabric Spec Sheet.pdf ↗</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Multiple documents matched</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-passage">in Documents (4) ↗</span>
+              </div>
+            </div>
+            <p style="margin-top: 12px; font-size:12px; color: var(--text-muted);">The chip shows only the source reference — not individual query terms — to avoid chip explosion when multiple words match across multiple documents. Expanding the chip reveals a list of matched documents with their relevant passage snippets.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Open Questions</div>
+            <div class="open-questions">
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>Semantic document search (chunking + embedding each document) is technically feasible but adds significant indexing cost and latency. Recommended as a Phase 2 feature, not a launch requirement.</p>
+              </div>
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>Image-format documents (scanned PDFs) require OCR + visual document understanding. Treat as out of scope for now.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversation Match -->
+      <div class="match-card" onclick="toggleCard(this)">
+        <div class="match-card-header">
+          <span class="match-type-badge badge-passage">Conversation</span>
+          <span class="match-card-title">Conversation Match</span>
+          <span class="match-card-subtitle">Query → matching content inside a conversation</span>
+          <span class="expand-icon">▾</span>
+        </div>
+        <div class="match-card-body">
+          <div class="body-section">
+            <div class="body-section-label">Definition</div>
+            <p>User provided a query. System found matching content inside a conversation associated with a record. Bridge is a passage from the conversation. Distinct from document match in that conversations carry speaker and time context — who said it and when is part of the evidence. Keyword matching recommended as the starting point.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Anatomy</div>
+            <table class="anatomy-table">
+              <thead>
+                <tr><th>Field</th><th>Description</th><th>Available?</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>source_type</td><td>Conversation (determines label)</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>matched_passage</td><td>Text excerpt from the conversation</td><td><span class="avail-always">● Always (keyword)</span></td></tr>
+                <tr><td>source_reference</td><td>Participant name and/or date</td><td><span class="avail-always">● Always</span></td></tr>
+                <tr><td>connection_type</td><td>Keyword now; semantic as future expansion</td><td><span class="avail-always">● Always</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Rendering Logic</div>
+            <div class="render-list">
+              <div class="render-row">
+                <span class="render-condition">One conversation matched</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-passage">in Conversation · Jane D., Mar 2026 ↗</span>
+              </div>
+              <div class="render-row">
+                <span class="render-condition">Multiple conversations matched</span>
+                <span class="render-arrow">→</span>
+                <span class="chip chip-passage">in Conversations (3) ↗</span>
+              </div>
+            </div>
+            <p style="margin-top: 12px; font-size:12px; color: var(--text-muted);">Same pattern as document match — chip shows source reference only, not individual query terms. Expanding reveals matched conversations with speaker, date, and passage context.</p>
+          </div>
+          <div class="body-section">
+            <div class="body-section-label">Open Questions</div>
+            <div class="open-questions">
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>Same semantic indexing question as document match — feasible but costly. Recommended as Phase 2.</p>
+              </div>
+              <div class="open-q">
+                <span class="open-q-icon">?</span>
+                <p>Does "conversation" refer to comments on a record, supplier messages, internal team threads — or all of the above? Scope needs to be defined before indexing decisions are made.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Table -->
+    <div style="margin-top: var(--space-8);">
+      <div class="body-section-label" style="margin-bottom: var(--space-4);">Summary — All Match Types at a Glance</div>
+      <table class="summary-table">
+        <thead>
+          <tr>
+            <th>Match Type</th>
+            <th>Paradigm</th>
+            <th>Text Bridge</th>
+            <th>Bridge Always Shown</th>
+            <th>Via Related Object?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="match-type-badge badge-keyword">Keyword</span></td>
+            <td>Text Bridge</td>
+            <td><span class="yes">Yes</span></td>
+            <td><span class="yes">Yes</span></td>
+            <td><span class="partial">Sometimes</span></td>
+          </tr>
+          <tr>
+            <td><span class="match-type-badge badge-semantic">Semantic</span></td>
+            <td>Text Bridge</td>
+            <td><span class="partial">Sometimes</span></td>
+            <td><span class="no">No — fallback needed</span></td>
+            <td><span class="partial">Sometimes</span></td>
+          </tr>
+          <tr>
+            <td><span class="match-type-badge badge-visual">Image 1</span></td>
+            <td>Visual Evidence</td>
+            <td><span class="no">No</span></td>
+            <td><span class="no">N/A</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td><span class="match-type-badge badge-visual">Image 2</span></td>
+            <td>Visual Evidence</td>
+            <td><span class="no">No</span></td>
+            <td><span class="no">N/A</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td><span class="match-type-badge badge-passage">Document</span></td>
+            <td>Passage Evidence</td>
+            <td><span class="partial">Passage snippet</span></td>
+            <td><span class="yes">Yes (keyword)</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td><span class="match-type-badge badge-passage">Conversation</span></td>
+            <td>Passage Evidence</td>
+            <td><span class="partial">Passage snippet</span></td>
+            <td><span class="yes">Yes (keyword)</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Chip Explosion Rules -->
+    <div style="margin-top: var(--space-10);">
+      <div class="section-header" style="margin-bottom: var(--space-6);">
+        <div class="section-step" style="background: #6B7280;">2</div>
+        <h2 class="section-title">Chip Explosion Rules</h2>
+      </div>
+
+      <!-- Group 1 -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--card-radius); margin-bottom: var(--space-4); overflow: hidden;">
+        <div style="padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); background: var(--surface-2);">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Group 1</div>
+          <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Same term, multiple locations on the same record</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Deduplication — collapse multiple signals about the same query term into one primary chip</div>
+        </div>
+
+        <div style="padding: var(--space-5); border-bottom: 1px solid var(--border);">
+          <div class="body-section-label" style="margin-bottom: var(--space-3);">Rules</div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+
+            <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+              <div style="min-width: 24px; height: 24px; border-radius: 50%; background: var(--accent-blue); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;">1</div>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Collect all matches for each query term</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">Gather every keyword and semantic match across all searchable attributes for that term.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+              <div style="min-width: 24px; height: 24px; border-radius: 50%; background: var(--accent-blue); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;">2</div>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Order by match type first, then by attribute rank</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">Keyword matches rank above semantic matches. Within each group, rank by attribute priority (admin-configured at MVP). Keyword always wins over semantic for the same term — don't show both.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+              <div style="min-width: 24px; height: 24px; border-radius: 50%; background: var(--accent-blue); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;">3</div>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Show top-ranked match as primary chip</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">The highest-ranked match for that query term becomes the visible chip. All remaining matches — including other colorway values, other attributes, semantic matches — go behind a <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px;">+X</code> control.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: var(--space-3); align-items: flex-start;">
+              <div style="min-width: 24px; height: 24px; border-radius: 50%; background: var(--accent-blue); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;">4</div>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Group by query term, not by display value</div>
+                <div style="font-size: 13px; color: var(--text-secondary);">The <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px;">+X</code> groups everything that matched because of the same query term — even if the found values look different (Dark Red, Light Red, Red, coral tones). Intent is the anchor, not the display text.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Concrete Example -->
+        <div style="padding: var(--space-5);">
+          <div class="body-section-label" style="margin-bottom: var(--space-4);">Concrete Example — Query: "red", on a single Style result</div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+
+            <!-- Before -->
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em;">All matches collected (unordered)</div>
+              <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--keyword-text); font-weight: 600; min-width: 60px;">keyword</span>
+                  <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px;"><span class="chip-dot" style="background:#C0392B"></span>Dark Red in Colorway</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--keyword-text); font-weight: 600; min-width: 60px;">keyword</span>
+                  <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px;"><span class="chip-dot" style="background:#E57373"></span>Light Red in Colorway</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--keyword-text); font-weight: 600; min-width: 60px;">keyword</span>
+                  <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px;"><span class="chip-dot" style="background:#B03A2E"></span>Brick Red in Colorway</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--keyword-text); font-weight: 600; min-width: 60px;">keyword</span>
+                  <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px;"><span class="chip-dot"></span>Red in Material Name</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--semantic-text); font-weight: 600; min-width: 60px;">semantic</span>
+                  <span class="chip chip-semantic" style="font-size: 11px; padding: 3px 10px;">"Red" ≈ coral tones in Description</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- After -->
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em;">What renders on the card</div>
+              <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--card-radius); padding: var(--space-4);">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-3);">Chip row on result card:</div>
+                <div style="display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;">
+                  <span class="chip chip-keyword"><span class="chip-dot" style="background:#C0392B"></span>Dark Red in Colorway</span>
+                  <span style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--pill-radius); font-size: 12px; color: var(--text-secondary); padding: 4px 10px; cursor: pointer; font-family: 'JetBrains Mono', monospace;">+4</span>
+                </div>
+                <div style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--border);">
+                  <div style="font-size: 11px; color: var(--text-muted); margin-bottom: var(--space-2);">Expanded (+4):</div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px; width: fit-content;"><span class="chip-dot" style="background:#E57373"></span>Light Red in Colorway</span>
+                    <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px; width: fit-content;"><span class="chip-dot" style="background:#B03A2E"></span>Brick Red in Colorway</span>
+                    <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px; width: fit-content;"><span class="chip-dot"></span>Red in Material Name</span>
+                    <span class="chip chip-semantic" style="font-size: 11px; padding: 3px 10px; width: fit-content;">"Red" ≈ coral tones in Description</span>
+                  </div>
+                </div>
+                <div style="margin-top: var(--space-3); font-size: 11px; color: var(--text-muted); line-height: 1.5;">All 5 matches grouped under the query term "red" — regardless of the different found values. Keyword matches first, semantic last.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 2 -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--card-radius); margin-bottom: var(--space-4); overflow: hidden;">
+        <div style="padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--border); background: var(--surface-2);">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Group 2</div>
+          <div style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Same term, multiple match paradigms</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">When a single query term produces matches across different paradigms — show the highest-ranking one only</div>
+        </div>
+
+        <!-- Core principle -->
+        <div style="padding: var(--space-5); border-bottom: 1px solid var(--border);">
+          <div class="body-section-label" style="margin-bottom: var(--space-3);">Core Principle</div>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.65;">For any query term, show one chip from the <strong style="color: var(--text-primary);">highest-ranking paradigm</strong> that produced a match. Suppress everything below it. Lower-paradigm matches go into <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px;">+X</code> alongside the Group 1 overflow. The user always gets one clear answer to "why did this appear" — not multiple competing explanations for the same term.</p>
+        </div>
+
+        <!-- Hierarchy -->
+        <div style="padding: var(--space-5); border-bottom: 1px solid var(--border);">
+          <div class="body-section-label" style="margin-bottom: var(--space-4);">Paradigm Hierarchy — Text Queries</div>
+          <div style="display: flex; flex-direction: column; gap: 0;">
+
+            <div style="display: flex; align-items: stretch; gap: 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; margin-right: var(--space-4);">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--keyword-bg); border: 2px solid var(--keyword-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--keyword-text); flex-shrink: 0;">1</div>
+                <div style="width: 2px; flex: 1; background: var(--border); margin: 4px 0;"></div>
+              </div>
+              <div style="padding-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Text Bridge <span style="font-weight: 400; color: var(--text-muted);">— keyword first, semantic second</span></div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Most authoritative. Match is on structured record data — directly verifiable by the user.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: stretch; gap: 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; margin-right: var(--space-4);">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--visual-bg); border: 2px solid var(--visual-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--visual-text); flex-shrink: 0;">2</div>
+                <div style="width: 2px; flex: 1; background: var(--border); margin: 4px 0;"></div>
+              </div>
+              <div style="padding-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Visual Evidence <span style="font-weight: 400; color: var(--text-muted);">— if no text bridge</span></div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Match is on images attached to the record. User verifies visually. Strong but less precise than structured data.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: stretch; gap: 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; margin-right: var(--space-4);">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--passage-bg); border: 2px solid var(--passage-border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--passage-text); flex-shrink: 0;">3</div>
+                <div style="width: 2px; flex: 1; background: var(--border); margin: 4px 0;"></div>
+              </div>
+              <div style="padding-bottom: var(--space-4);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Document <span style="font-weight: 400; color: var(--text-muted);">— if no text bridge and no visual</span></div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Match found inside an attached reference document. Supplementary — the record's core data doesn't confirm the match.</div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: flex-start; gap: 0;">
+              <div style="display: flex; flex-direction: column; align-items: center; margin-right: var(--space-4);">
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); border: 2px solid var(--border-light); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--text-muted); flex-shrink: 0;">4</div>
+              </div>
+              <div>
+                <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">Conversation <span style="font-weight: 400; color: var(--text-muted);">— last resort fallback only</span></div>
+                <div style="font-size: 12px; color: var(--text-secondary);">Match found in a conversation thread. Weakest signal — incidental mention rather than deliberate data. Only surfaces when nothing stronger exists.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Image query special rule -->
+        <div style="padding: var(--space-5); border-bottom: 1px solid var(--border); background: #FFFBEB; border-left: 3px solid #F59E0B;">
+          <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #92400E; margin-bottom: var(--space-2);">Special Rule — Image Queries</div>
+          <p style="font-size: 13px; color: #78350F; line-height: 1.65;">When the user's query is an uploaded image, <strong>show visual chips only</strong>. Text bridge, document, and conversation matches are suppressed entirely. Image search has a distinct mental model — the user is asking "find things that look like this," not "find records that mention this." Surfacing document or conversation matches on an image query breaks that expectation.</p>
+        </div>
+
+        <!-- Decision table -->
+        <div style="padding: var(--space-5); border-bottom: 1px solid var(--border);">
+          <div class="body-section-label" style="margin-bottom: var(--space-4);">Decision Table — What to Show</div>
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Text bridge</th>
+                <th>Visual</th>
+                <th>Document</th>
+                <th>Conversation</th>
+                <th>Show</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="yes">✓</span></td>
+                <td>any</td>
+                <td>any</td>
+                <td>any</td>
+                <td>Text bridge chip only</td>
+              </tr>
+              <tr>
+                <td><span class="no">✗</span></td>
+                <td><span class="yes">✓</span></td>
+                <td>any</td>
+                <td>any</td>
+                <td>Visual chip only</td>
+              </tr>
+              <tr>
+                <td><span class="no">✗</span></td>
+                <td><span class="no">✗</span></td>
+                <td><span class="yes">✓</span></td>
+                <td>any</td>
+                <td>Document chip only</td>
+              </tr>
+              <tr>
+                <td><span class="no">✗</span></td>
+                <td><span class="no">✗</span></td>
+                <td><span class="no">✗</span></td>
+                <td><span class="yes">✓</span></td>
+                <td>Conversation chip only</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="margin-top: var(--space-3); font-size: 12px; color: var(--text-muted);">Lower-paradigm matches don't disappear — they fold into the <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px;">+X</code> alongside Group 1 overflow. Discoverable, but not competing for attention.</p>
+        </div>
+
+        <!-- Concrete example -->
+        <div style="padding: var(--space-5);">
+          <div class="body-section-label" style="margin-bottom: var(--space-4);">Concrete Example — Query: "red", all paradigms match</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em;">All paradigm matches found</div>
+              <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--keyword-text); font-weight: 600; min-width: 72px;">text bridge</span>
+                  <span class="chip chip-keyword" style="font-size: 11px; padding: 3px 10px;"><span class="chip-dot" style="background:#C0392B"></span>Dark Red in Colorway</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--visual-text); font-weight: 600; min-width: 72px;">visual</span>
+                  <span class="chip chip-visual" style="font-size: 11px; padding: 3px 10px;"><span class="chip-thumb" style="width:16px;height:16px;"></span>Visual match · Hero Image</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--passage-text); font-weight: 600; min-width: 72px;">document</span>
+                  <span class="chip chip-passage" style="font-size: 11px; padding: 3px 10px;">in Fabric Spec Sheet.pdf ↗</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span style="font-size: 10px; color: var(--passage-text); font-weight: 600; min-width: 72px;">conversation</span>
+                  <span class="chip chip-passage" style="font-size: 11px; padding: 3px 10px;">in Conversations (2) ↗</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: var(--space-3); text-transform: uppercase; letter-spacing: 0.06em;">What renders on the card</div>
+              <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--card-radius); padding: var(--space-4);">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-2);">Text bridge present → show text bridge only:</div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span class="chip chip-keyword"><span class="chip-dot" style="background:#C0392B"></span>Dark Red in Colorway</span>
+                  <span style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--pill-radius); font-size: 12px; color: var(--text-secondary); padding: 4px 10px; font-family: 'JetBrains Mono', monospace;">+X</span>
+                </div>
+                <div style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--border); font-size: 11px; color: var(--text-muted); line-height: 1.6;">
+                  <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--surface); padding: 1px 5px; border-radius: 3px;">+X</code> contains: other colorway values, other keyword/semantic attribute matches (Group 1), plus the visual, document, and conversation matches (Group 2). One expand control surfaces everything.
+                </div>
+              </div>
+
+              <div style="margin-top: var(--space-4); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--card-radius); padding: var(--space-4);">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: var(--space-2);">If NO text bridge, but visual found:</div>
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                  <span class="chip chip-visual"><span class="chip-thumb" style="width:16px;height:16px;"></span>Visual match · Hero Image</span>
+                  <span style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--pill-radius); font-size: 12px; color: var(--text-secondary); padding: 4px 10px; font-family: 'JetBrains Mono', monospace;">+X</span>
+                </div>
+                <div style="margin-top: var(--space-3); padding-top: var(--space-3); border-top: 1px dashed var(--border); font-size: 11px; color: var(--text-muted);">Document and conversation matches fold into <code style="font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--surface); padding: 1px 5px; border-radius: 3px;">+X</code>.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Group 3 placeholder -->
+      <div style="background: var(--surface); border: 1px dashed var(--border-light); border-radius: var(--card-radius); padding: var(--space-5); margin-bottom: var(--space-4);">
+        <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Group 3 — To be resolved</div>
+        <div style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-2);">Multi-term queries compound the problem</div>
+        <p style="font-size: 13px; color: var(--text-secondary);">"Red summer dress" has 3 terms. After Groups 1 and 2 rules are applied per term, how many primary chips appear on a card simultaneously? A cap and truncation strategy is still needed.</p>
+      </div>
+
+    </div>
+
+    <!-- Next Step -->
+    <div class="next-step">
+      <div class="next-step-icon">→</div>
+      <div class="next-step-text">
+        <strong>Next — Group 3: Multi-term queries.</strong><br/>
+        Groups 1 and 2 solve the per-term chip problem. Group 3 addresses what happens when multiple terms each generate their own primary chip on the same card.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    <span>AI Search in PLM — Explanation System</span>
+    <span>Step 1 of 4 · Last updated April 2026</span>
+  </div>
+
+</div>
+
+<script>
+  function toggleCard(card) {
+    card.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
