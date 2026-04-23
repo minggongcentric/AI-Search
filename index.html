@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prototype Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: #e2e0da;
+      --border-focus: #b0aca0;
+      --accent: #1a1a1a;
+      --tag-bg: #eeede9;
+      --tag-text: #666;
+      --text-primary: #1a1a1a;
+      --text-secondary: #666;
+      --text-dim: #aaa;
+      --preview-bg: #f7f6f2;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+      --shadow-hover: 0 4px 16px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    header {
+      padding: 52px 0 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .logo-area h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: var(--text-primary);
+    }
+
+    .logo-area h1 em {
+      font-style: italic;
+      color: #888;
+    }
+
+    .logo-area p {
+      margin-top: 10px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    .count-badge {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 14px;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+
+    .toolbar {
+      padding: 24px 0 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    #search {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px 10px 38px;
+      color: var(--text-primary);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-shadow: var(--shadow);
+    }
+
+    #search:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(0,0,0,0.06);
+    }
+
+    #search::placeholder { color: var(--text-dim); }
+
+    .filter-group {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      box-shadow: var(--shadow);
+    }
+
+    .filter-btn:hover { border-color: var(--border-focus); color: var(--text-primary); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: none; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      padding-bottom: 80px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+      animation: fadeUp 0.4s ease both;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-hover);
+      transform: translateY(-2px);
+      border-color: #ccc;
+    }
+
+    .card-preview {
+      width: 100%;
+      height: 180px;
+      background: var(--preview-bg);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .browser-bar {
+      height: 28px;
+      background: #eeece8;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+
+    .browser-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .browser-dot:nth-child(1) { background: #f4b44a; }
+    .browser-dot:nth-child(2) { background: #5ac05a; }
+    .browser-dot:nth-child(3) { background: #f47b72; }
+
+    .browser-url {
+      flex: 1;
+      height: 13px;
+      background: #e0ddd8;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+
+    .preview-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+    }
+
+    .placeholder-block {
+      width: 140px;
+      height: 34px;
+      border-radius: 6px;
+      background: #dedad4;
+    }
+
+    .placeholder-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      width: 140px;
+    }
+
+    .placeholder-line { height: 7px; border-radius: 4px; background: #dedad4; }
+    .placeholder-line:nth-child(1) { width: 100%; }
+    .placeholder-line:nth-child(2) { width: 70%; }
+    .placeholder-line:nth-child(3) { width: 85%; }
+    .placeholder-line:nth-child(4) { width: 55%; height: 5px; margin-top: 2px; }
+
+    .card-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .card-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--text-dim);
+    }
+
+    .card-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .card-arrow {
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      transition: color 0.15s;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .card:hover .card-arrow { color: var(--text-primary); }
+
+    .notice {
+      background: #fff8e7;
+      border: 1px solid #f0e0b0;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 0.82rem;
+      color: #7a6530;
+      line-height: 1.7;
+    }
+
+    .notice strong { color: #5a4510; font-weight: 600; }
+    .notice code {
+      font-family: 'DM Mono', monospace;
+      background: rgba(0,0,0,0.06);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+    }
+
+    .notice-close {
+      float: right;
+      background: none;
+      border: none;
+      color: #aaa;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-left: 12px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--text-dim);
+    }
+
+    .empty p { font-size: 0.875rem; margin-top: 8px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 22px 0;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <h1>Design <em>Prototypes</em></h1>
+        <p>Click any card to open the prototype in your browser</p>
+      </div>
+      <div class="header-meta">
+        <span class="count-badge" id="count-badge">— files</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="search" placeholder="Search prototypes…" />
+    </div>
+    <div class="filter-group" id="filter-group">
+      <button class="filter-btn active" data-tag="all">All</button>
+    </div>
+  </div>
+
+  <div class="notice" id="setup-notice">
+    <button class="notice-close" onclick="this.parentElement.remove()">✕</button>
+    <strong>How to add your prototypes:</strong> Find the <code>prototypes</code> array in this file's <code>&lt;script&gt;</code> section and add entries with <code>file</code>, <code>title</code>, <code>date</code>, and optional <code>tag</code>. Place all HTML files in the same folder as this <code>index.html</code> on GitHub.
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<footer>
+  <span id="footer-text">prototype gallery</span>
+</footer>
+
+<script>
+  // ─────────────────────────────────────────────
+  // ✏️  ADD YOUR PROTOTYPES HERE
+  // Each entry: { file, title, date, tag (optional) }
+  // ─────────────────────────────────────────────
+  const prototypes = [
+    {
+      file: "result-explanation-system.html",
+      title: "Result Explanation System",
+      date: "Apr 23, 2025",
+      tag: "ai-search"
+    },
+    {
+      file: "login-flow.html",
+      title: "Login Flow",
+      date: "Apr 20, 2025",
+      tag: "auth"
+    },
+    {
+      file: "onboarding.html",
+      title: "Onboarding",
+      date: "Apr 18, 2025",
+      tag: "flow"
+    },
+    {
+      file: "dashboard-v2.html",
+      title: "Dashboard v2",
+      date: "Apr 15, 2025",
+      tag: "dashboard"
+    },
+  ];
+  // ─────────────────────────────────────────────
+
+  const grid = document.getElementById('grid');
+  const searchInput = document.getElementById('search');
+  const filterGroup = document.getElementById('filter-group');
+  const countBadge = document.getElementById('count-badge');
+  let activeTag = 'all';
+
+  const tags = [...new Set(prototypes.map(p => p.tag).filter(Boolean))];
+  tags.forEach(tag => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn';
+    btn.dataset.tag = tag;
+    btn.textContent = tag;
+    filterGroup.appendChild(btn);
+  });
+
+  filterGroup.addEventListener('click', e => {
+    const btn = e.target.closest('.filter-btn');
+    if (!btn) return;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTag = btn.dataset.tag;
+    render();
+  });
+
+  searchInput.addEventListener('input', render);
+
+  function render() {
+    const query = searchInput.value.toLowerCase().trim();
+    const filtered = prototypes.filter(p => {
+      const matchTag = activeTag === 'all' || p.tag === activeTag;
+      const matchSearch = !query || p.title.toLowerCase().includes(query) || (p.tag || '').includes(query);
+      return matchTag && matchSearch;
+    });
+
+    countBadge.textContent = `${filtered.length} file${filtered.length !== 1 ? 's' : ''}`;
+    grid.innerHTML = '';
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <p>No prototypes match your search.</p>
+      </div>`;
+      return;
+    }
+
+    filtered.forEach((p, i) => {
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = p.file;
+      card.target = '_blank';
+      card.rel = 'noopener';
+      card.style.animationDelay = `${i * 0.05}s`;
+
+      card.innerHTML = `
+        <div class="card-preview">
+          <div class="browser-bar">
+            <div class="browser-dot"></div>
+            <div class="browser-dot"></div>
+            <div class="browser-dot"></div>
+            <div class="browser-url"></div>
+          </div>
+          <div class="preview-content">
+            <div class="placeholder-block"></div>
+            <div class="placeholder-lines">
+              <div class="placeholder-line"></div>
+              <div class="placeholder-line"></div>
+              <div class="placeholder-line"></div>
+              <div class="placeholder-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-title">${p.title}</div>
+          <div class="card-meta">
+            <span class="card-date">${p.date}</span>
+            ${p.tag ? `<span class="card-tag">${p.tag}</span>` : ''}
+          </div>
+          <div class="card-arrow">
+            Open prototype
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 17L17 7M17 7H7M17 7v10"/>
+            </svg>
+          </div>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+
+    document.getElementById('footer-text').textContent =
+      `${prototypes.length} prototype${prototypes.length !== 1 ? 's' : ''} · last updated ${prototypes[0]?.date || '—'}`;
+  }
+
+  render();
+</script>
+</body>
+</html>
